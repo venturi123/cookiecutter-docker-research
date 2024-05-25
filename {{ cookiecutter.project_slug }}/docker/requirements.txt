@@ -1,0 +1,44 @@
+# basic
+numpy
+pandas
+scikit-learn
+matplotlib
+seaborn
+scipy
+sympy
+nvitop
+
+# deep learning
+transformers
+lightning
+torchmetrics
+torchinfo
+fastai
+mosaicml
+
+# machine learning
+xgboost
+lightgbm
+
+# image processing
+opencv-python-headless
+Pillow
+
+# data loading 
+pyarrow
+xarray
+pyvista
+lmdb
+
+# model optimization/experiment tracking
+tensorboard
+wandb
+
+# utilities
+tqdm
+ruff
+black
+
+# notebooks
+jupyterlab
+ipywidgets

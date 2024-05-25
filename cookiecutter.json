@@ -1,0 +1,9 @@
+{
+    "project_name": "project_name",
+    "project_slug": "{{ cookiecutter.project_name.lower().replace(' ', '_').replace('-', '_') }}",
+    "jupyter_host_port": "8888",
+    "description": "Please input a short description for this project",
+    "data_source_type": ["manual", "nfs", "s3", "url"],
+    "data_source": "Please input the data source (leave blank for manual type)",
+    "nvidia_docker_tag": "24.04-py3"
+}

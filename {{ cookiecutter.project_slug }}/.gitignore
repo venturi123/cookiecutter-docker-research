@@ -1,0 +1,10 @@
+# compiled
+*.pyc
+
+# assets
+asset
+model
+data
+
+# notebook
+notebook/.ipynb_checkpoints
