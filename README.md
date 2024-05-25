@@ -65,6 +65,9 @@ make destroying
 
 > Finished the whole project and want to archive it? Don't trust network storage? Want to keep everything local? Just one command!
 
+> [!CAUTION]
+> Please do not overly rely on this feature. The author disclaims any warranty for your data security. Data backups should follow the [3-2-1 rule](https://en.wikipedia.org/wiki/Backup#:~:text=The%203%2D2%2D1%20rule,this%20can%20include%20cloud%20storage).
+
 ```shell
 # The entire workdir and Docker environment will be packaged within one single file
 make archive
