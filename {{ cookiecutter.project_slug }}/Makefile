@@ -1,5 +1,5 @@
-.PHONY: clean clean-model clean-pyc docs help init init-docker create-container start-container jupyter test lint profile \
-        clean-data clean-docker clean-container clean-image sync-from-source sync-to-source init-docker-no-cache \
+.PHONY: on-host on-docker clean clean-model clean-pyc docs help init init-docker create-container start-container jupyter test lint profile \
+        clean-data clean-docker clean-container clean-image sync-from-source sync-to-source init-docker-no-cache backup \
         attach-container launch-container archive reproduce verify-cuda clean-container-force clean-docker-cache destroying format
 .DEFAULT_GOAL := help
 
@@ -75,6 +75,20 @@ export DATE=$(shell date +%Y%m%d%H%M%S)
 help: ## show this message
 	@$(PYTHON) -c "$$PRINT_HELP_PYSCRIPT" < $(MAKEFILE_LIST)
 
+# check if host
+on-host:
+	@if [ "$$(whoami)" = "docker" ]; then \
+		printf "\033[0;31mError: This script should be run on the host, not inside a Docker container.\033[0m\n"; \
+		exit 1; \
+	fi
+
+# check if docker
+on-docker:
+	@if ! [ "$$(whoami)" = "docker" ]; then \
+		printf "\033[0;31mError: This script should be run inside a Docker container, not on the host.\033[0m\n"; \
+		exit 1; \
+	fi
+
 init: init-docker sync-from-source ## initialize repository for traning
 
 sync-from-source: ## download data data source to local envrionment
@@ -100,29 +114,32 @@ sync-to-source: ## sync local data to data source
 	echo "mount data folder when create docker container with -v flag."
 {% endif %}
 
-init-docker: ## initialize docker image
+init-docker: on-host ## initialize docker image
 	$(DOCKER) build -t $(IMAGE_NAME) -f $(DOCKERFILE) --build-arg UID=$(shell id -u) .
 
-init-docker-no-cache: ## initialize docker image without cache
+init-docker-no-cache: on-host ## initialize docker image without cache
 	$(DOCKER) build --no-cache -t $(IMAGE_NAME) -f $(OCKERFILE) --build-arg UID=$(shell id -u) .
 
 # Recommanded, first up a container and keep it running (important for VS Code), then fork a new connect session. No interruption between them.
-create-container: ## create docker container
-	$(DOCKER) run -d --gpus all --ipc=host --pid=host -p $(JUPYTER_HOST_PORT):$(JUPYTER_CONTAINER_PORT) -v "${PWD}:/home/docker/${PROJECT_NAME}" --name $(CONTAINER_NAME) $(IMAGE_NAME) tail -f /dev/null	
-attach-container: ## attach docker container
+create-container: on-host ## create docker container
+	$(DOCKER) run -d --gpus all --ipc=host --pid=host -p $(JUPYTER_HOST_PORT):$(JUPYTER_CONTAINER_PORT) -v /tmp:/tmp -v "${PWD}:/home/docker/${PROJECT_NAME}" --name $(CONTAINER_NAME) $(IMAGE_NAME) tail -f /dev/null
+attach-container: on-host ## attach docker container
 	@echo "$$START_DOCKER_CONTAINER" | $(SHELL)
 	@echo "Launched $(CONTAINER_NAME)..."
 	$(DOCKER) exec -it $(CONTAINER_NAME) /bin/bash
 
 # Not recommanded, start-container will connect to the exist launch-container session, not new a terminal
-launch-container: ## launch docker container
-	$(DOCKER) run -it --gpus all --ipc=host --pid=host -p $(JUPYTER_HOST_PORT):$(JUPYTER_CONTAINER_PORT) -v "${PWD}:/home/docker/${PROJECT_NAME}" --name $(CONTAINER_NAME) $(IMAGE_NAME)
-start-container: ## start docker container
+launch-container: on-host ## launch docker container
+	$(DOCKER) run -it --gpus all --ipc=host --pid=host -p $(JUPYTER_HOST_PORT):$(JUPYTER_CONTAINER_PORT) -v /tmp:/tmp -v "${PWD}:/home/docker/${PROJECT_NAME}" --name $(CONTAINER_NAME) $(IMAGE_NAME)
+start-container: on-host ## start docker container
 	@echo "$$START_DOCKER_CONTAINER" | $(SHELL)
 	@echo "Launched $(CONTAINER_NAME)..."
 	$(DOCKER) attach $(CONTAINER_NAME)
 
-archive: ## archive all the data/environment to one file with SHA256
+backup: on-host  ## fast backup to github repository
+	@bash docker/backup.sh
+
+archive: on-host ## archive all the data/environment to one file with SHA256
 	@command -v zstd >/dev/null 2>&1 || { echo -e >&2 "\033[31mzstd is required but it's not installed.\033[0m\nPlease install zstd library first using:\n\033[32msudo apt install zstd\033[0m"; exit 1; }
 	@$(DOCKER) commit $(CONTAINER_NAME) $(IMAGE_NAME)-$(DATE) >/dev/null 2>&1
 	@$(DOCKER) save -o $(IMAGE_NAME)-$(DATE).tar $(IMAGE_NAME)-$(DATE) >/dev/null 2>&1
@@ -133,7 +150,7 @@ archive: ## archive all the data/environment to one file with SHA256
 	tar -I zstd -cvf $(PROJECT_NAME).tar.zst $(PROJECT_NAME)  >/dev/null 2>&1 && \
 	sha256sum $(PROJECT_NAME).tar.zst > $(PROJECT_NAME).tar.zst.sha256
 	@echo "$(PROJECT_NAME) has been archived successfully!"
-reproduce: ## reload the env from .tar file
+reproduce: on-host ## reload the env from .tar file
 	@reproduce_tar=$(shell ls -t $(IMAGE_NAME)-*.tar | head -n 1) && \
 	if [ -z "$$reproduce_tar" ]; then \
 		echo "No tar file found."; \
@@ -146,19 +163,19 @@ reproduce: ## reload the env from .tar file
 		echo "Enter the container using the command:\n\033[32m$(DOCKER) exec -it $$reproduce_container_name /bin/bash\033[0m"; \
 	fi
 
-jupyter: ## start Jupyter Notebook server
+jupyter: on-docker ## start Jupyter Notebook server
 	jupyter lab --ip=0.0.0.0 --port=${JUPYTER_CONTAINER_PORT}
 
-test: ## run test cases in tests directory
+test: on-docker ## run test cases in tests directory
 	$(PYTHON) -m unittest discover
 	
-verify-cuda: ## check if cuda installed correctly
+verify-cuda: on-docker ## check if cuda installed correctly
 	$(PYTHON) tests/verify_cuda.py
 
 lint: ## linter
 	ruff check --fix
 
-profile: ## show profile of the project
+profile: on-host ## show profile of the project
 	@echo "CONTAINER_NAME: $(CONTAINER_NAME)"
 	@echo "IMAGE_NAME: $(IMAGE_NAME)"
 	@echo "JUPYTER_PORT: `$(DOCKER) port $(CONTAINER_NAME)`"
@@ -194,7 +211,7 @@ clean-image: ## remove Docker image
 clean-docker-cache: # DANGER! YOU SHOULD KNOW WHAT WILL HAPPEN BEFORE RUN
 	-$(DOCKER) system prune -a
 	
-destroying: clean-docker  ## DANGER! YOU SHOULD KNOW WHAT WILL HAPPEN BEFORE RUN
+destroying: on-host clean-docker  ## DANGER! YOU SHOULD KNOW WHAT WILL HAPPEN BEFORE RUN
 	-cd .. && rm -rf $(PROJECT_NAME)
 
 format:
