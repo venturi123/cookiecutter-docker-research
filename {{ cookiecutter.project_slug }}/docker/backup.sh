@@ -14,6 +14,6 @@ if [[ -n $(git status -s) ]]; then
   git push
   printf "\033[0;32mPush complete. Backup successful.\033[0m\n"
 else
-  printf "No changes detected, no commit made."
+  printf "No changes detected, no commit made.\n"
 fi
 
