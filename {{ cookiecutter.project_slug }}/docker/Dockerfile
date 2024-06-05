@@ -19,4 +19,5 @@ RUN pip3 install --upgrade pip
 RUN pip install --no-cache-dir -r /home/docker/requirements.txt
 
 ENV PATH=$PATH:/home/docker/.local/bin
+ENV PYTHONPATH=/home/docker/{{ cookiecutter.project_slug }}
 WORKDIR /home/docker/{{ cookiecutter.project_slug }}

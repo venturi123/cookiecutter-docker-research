@@ -170,7 +170,7 @@ test: on-docker ## run test cases in tests directory
 	$(PYTHON) -m unittest discover
 	
 verify-cuda: on-docker ## check if cuda installed correctly
-	$(PYTHON) tests/verify_cuda.py
+	$(PYTHON) docker/verify_cuda.py
 
 lint: ## linter
 	ruff check --fix
