@@ -8,12 +8,32 @@ if [ ! -d ".git" ]; then
   exit 1
 fi
 
+# Check if there are changes to be committed
 if [[ -n $(git status -s) ]]; then
+  # Add changes
   git add .
+  if [ $? -ne 0 ]; then
+    printf "\033[0;31mAdd failed.\033[0m\n"  # Red text
+    exit 1
+  fi
+
+  # Commit changes
   git commit -m "Regular backup"
+  if [ $? -ne 0 ]; then
+    printf "\033[0;31mCommit failed.\033[0m\n"  # Red text
+    exit 1
+  fi
+
+  # Push changes
   git push
-  printf "\033[0;32mPush complete. Backup successful.\033[0m\n"
+  if [ $? -ne 0 ]; then
+    printf "\033[0;31mPush failed.\033[0m\n"  # Red text
+    exit 1
+  fi
+
+  printf "\033[0;32mPush complete. Backup successful.\033[0m\n"  # Green text
 else
-  printf "No changes detected, no commit made.\n"
+  printf "\033[0;33mNo changes to commit.\033[0m\n"  # Yellow text
 fi
+
 
