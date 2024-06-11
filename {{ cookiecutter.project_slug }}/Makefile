@@ -122,7 +122,7 @@ init-docker-no-cache: on-host ## initialize docker image without cache
 
 # Recommanded, first up a container and keep it running (important for VS Code), then fork a new connect session. No interruption between them.
 create-container: on-host ## create docker container
-	$(DOCKER) run -d --gpus all --ipc=host --pid=host -p $(JUPYTER_HOST_PORT):$(JUPYTER_CONTAINER_PORT) -v "${PWD}:/home/docker/${PROJECT_NAME}" --name $(CONTAINER_NAME) $(IMAGE_NAME) tail -f /dev/null
+	$(DOCKER) run -d --gpus all --ipc=host --pid=host -p $(JUPYTER_HOST_PORT):$(JUPYTER_CONTAINER_PORT) -v "${PWD}:/home/docker/${PROJECT_NAME}" -v "${HOME}/.ssh:/home/docker/.ssh" --name $(CONTAINER_NAME) $(IMAGE_NAME) tail -f /dev/null
 attach-container: on-host ## attach docker container
 	@echo "$$START_DOCKER_CONTAINER" | $(SHELL)
 	@echo "Launched $(CONTAINER_NAME)..."
@@ -130,13 +130,13 @@ attach-container: on-host ## attach docker container
 
 # Not recommanded, start-container will connect to the exist launch-container session, not new a terminal
 launch-container: on-host ## launch docker container
-	$(DOCKER) run -it --gpus all --ipc=host --pid=host -p $(JUPYTER_HOST_PORT):$(JUPYTER_CONTAINER_PORT) -v "${PWD}:/home/docker/${PROJECT_NAME}" --name $(CONTAINER_NAME) $(IMAGE_NAME)
+	$(DOCKER) run -it --gpus all --ipc=host --pid=host -p $(JUPYTER_HOST_PORT):$(JUPYTER_CONTAINER_PORT) -v "${PWD}:/home/docker/${PROJECT_NAME}" -v "${HOME}/.ssh:/home/docker/.ssh" --name $(CONTAINER_NAME) $(IMAGE_NAME)
 start-container: on-host ## start docker container
 	@echo "$$START_DOCKER_CONTAINER" | $(SHELL)
 	@echo "Launched $(CONTAINER_NAME)..."
 	$(DOCKER) attach $(CONTAINER_NAME)
 
-backup: on-host  ## fast backup to github repository
+backup: ## fast backup to github repository
 	@bash docker/backup.sh
 
 archive: on-host ## archive all the data/environment to one file with SHA256
