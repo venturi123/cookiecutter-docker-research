@@ -1,9 +1,4 @@
 # basic
-numpy
-pandas
-matplotlib
-scipy
-sympy
 nvitop
 
 # utilities
