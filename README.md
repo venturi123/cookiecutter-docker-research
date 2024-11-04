@@ -1,14 +1,12 @@
-# Cookiecutter-Docker-Research: QuickStart Deep Learning Project
+# Cookiecutter-Docker-Research
 
-Hey there! 👋 Welcome to my Cookiecutter-Docker-Research repo!
-
-If you've ever found yourself frustrated by trying to run deep learning projects on servers with messy, inconsistent environments, you're not alone.
+Hey there! 👋 Welcome to my Cookiecutter-Docker-Research repo! If you've ever found yourself frustrated by trying to run deep learning projects on servers with messy, inconsistent environments, you're not alone.
 
 Maybe you're still looking for an elegant remote development solution that works out-of-the-box, lets you connect and disconnect freely, and ensures no process is lost.
 
-Or perhaps you want to package your entire project into a single file once it's done, so you can save it, reproduce it anytime, or share it on GitHub without worrying about endless environment issues.
+Or perhaps you want to package your entire project into a single file once it's done so you can save it, reproduce it anytime, or share it on GitHub without worrying about endless environmental issues.
 
-Well, you've come to the right place! Welcome to the QuickStart Deep Learning project. With Docker, PyTorch, and CUDA, you'll be up and running in under ten minutes.
+Well, you've come to the right place! With Docker, PyTorch, and CUDA, you'll be up and running in under ten minutes.
 
 Let's get started! 💪
 
@@ -26,10 +24,10 @@ Let's get started! 💪
 ### Prerequisites
 
 - A currently supported Linux release (using outdated Linux releases is not recommended)
+- [Docker Engine](https://docs.docker.com/engine/install/)
 - [NVIDIA GPU Drivers](https://docs.nvidia.com/datacenter/tesla/tesla-installation-notes/index.html) (no need to install the NVIDIA CUDA Toolkit separately)
 - [NVIDIA Container Toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html)
 - [Cookiecutter](https://github.com/cookiecutter/cookiecutter)
-- [Docker Engine](https://docs.docker.com/engine/install/)
 
 ### Quick Start 🌪️
 
@@ -109,7 +107,7 @@ Just run the script in the folder. It's that simple!
 
 ### Containers Losing Access to GPUs with Error: "Failed to initialize NVML: Unknown Error"
 
-Here's a shell script consolidating solutions for the longstanding issue with nvidia-container-toolkit, based on the following references:
+Here's a shell script consolidating solutions for the longstanding issue with Nvidia-container-toolkit, based on the following references:
 
 - [https://github.com/NVIDIA/nvidia-container-toolkit/issues/48](https://github.com/NVIDIA/nvidia-container-toolkit/issues/48)
 - [https://github.com/NVIDIA/nvidia-container-toolkit/issues/381#issuecomment-1976800649](https://github.com/NVIDIA/nvidia-container-toolkit/issues/381#issuecomment-1976800649)
@@ -137,10 +135,10 @@ sudo tee /etc/docker/daemon.json > /dev/null <<'EOF'
 }
 EOF
 
-echo "Updated /etc/docker/daemon.json with new configuration."
+echo "Updated /etc/docker/daemon.json with a new configuration."
 ```
 
-This script will apply the consolidated fixes by updating configurations for both nvidia-container-runtime and Docker. Each step includes feedback messages for clarity.
+This script will apply the consolidated fixes by updating configurations for both Nvidia-container-runtime and Docker. Each step includes feedback messages for clarity.
 
 ## Contributions
 
