@@ -140,7 +140,7 @@ reproduce: on-host ## Reload the environment from a .tar file
 		else \
 			echo "Tagging loaded image as $(IMAGE_NAME):latest"; \
 			$(DOCKER) tag $$loaded_image_id $(IMAGE_NAME):latest; \
-			$(DOCKER) rmi $$(docker images --format="{{.Repository}}:{{.Tag}}" | grep "$(PROJECT_NAME)-" | grep -v "$(IMAGE_NAME):latest") || true; \
+			$(DOCKER) rmi $$(docker images --format={% raw %}"{{.Repository}}:{{.Tag}}"{% endraw %} | grep "$(PROJECT_NAME)-" | grep -v "$(IMAGE_NAME):latest") || true; \
 			echo "Docker image loaded and tagged as $(IMAGE_NAME):latest"; \
 		fi; \
 	fi
