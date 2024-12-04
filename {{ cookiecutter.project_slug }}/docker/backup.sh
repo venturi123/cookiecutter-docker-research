@@ -1,11 +1,14 @@
 #!/bin/bash
 
-
+# Initialize git if not already initialized
 if [ ! -d ".git" ]; then
-  printf "\033[0;31mThis directory is not a Git repository. Please run the following commands to initialize a Git repository and link it to GitHub:\033[0m\n"
-  printf "  \033[0;32mgit init\033[0m\n"
-  printf "  \033[0;32mgit remote add origin <your-repo-url>\033[0m\n"
-  exit 1
+  printf "\033[0;33mInitializing git repository...\033[0m\n"
+  git init
+  if [ $? -ne 0 ]; then
+    printf "\033[0;31mGit initialization failed.\033[0m\n"
+    exit 1
+  fi
+  printf "\033[0;32mGit repository initialized successfully.\033[0m\n"
 fi
 
 # Check if there are changes to be committed
@@ -13,27 +16,25 @@ if [[ -n $(git status -s) ]]; then
   # Add changes
   git add .
   if [ $? -ne 0 ]; then
-    printf "\033[0;31mAdd failed.\033[0m\n"  # Red text
+    printf "\033[0;31mAdd failed.\033[0m\n"
     exit 1
   fi
 
   # Commit changes
   git commit -m "Regular backup"
   if [ $? -ne 0 ]; then
-    printf "\033[0;31mCommit failed.\033[0m\n"  # Red text
+    printf "\033[0;31mCommit failed.\033[0m\n"
     exit 1
   fi
-
-  # Push changes
-  git push
-  if [ $? -ne 0 ]; then
-    printf "\033[0;31mPush failed.\033[0m\n"  # Red text
-    exit 1
-  fi
-
-  printf "\033[0;32mPush complete. Backup successful.\033[0m\n"  # Green text
+  printf "\033[0;32mLocal backup successful.\033[0m\n"
+  
+  # Show instructions for pushing to remote
+  printf "\033[0;33mTo push to remote repository, use these commands:\033[0m\n"
+  printf "  \033[0;36m# Add remote repository if not configured:\033[0m\n"
+  printf "  \033[0;32mgit remote add origin <your-repo-url>\033[0m\n"
+  printf "  \033[0;36m# Push to remote:\033[0m\n"
+  printf "  \033[0;32mgit push\033[0m\n"
 else
-  printf "\033[0;33mNo changes to commit.\033[0m\n"  # Yellow text
+  printf "\033[0;33mNo changes to commit.\033[0m\n"
 fi
-
 
