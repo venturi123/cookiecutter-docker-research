@@ -15,7 +15,6 @@ export JUPYTER_CONTAINER_PORT=8888
 export IMAGE_NAME=$(PROJECT_NAME)-image
 export CONTAINER_NAME=$(PROJECT_NAME)-container
 export DATE=$(shell date +%Y%m%d%H%M%S)
-export PYTHON=python
 
 ###########################################################################################################
 ## HELPERS
@@ -98,6 +97,7 @@ create-container: on-host check-docker-installed ## Create and start a detached 
 		-p $(JUPYTER_HOST_PORT):$(JUPYTER_CONTAINER_PORT) \
 		-v "${PWD}:/home/docker/${PROJECT_NAME}" \
 		-v "${HOME}/.ssh:/home/docker/.ssh" \
+		-v "${HOME}/.gitconfig:/home/docker/.gitconfig" \
 		--name $(CONTAINER_NAME) \
 		$(IMAGE_NAME) tail -f /dev/null
 
@@ -107,8 +107,10 @@ attach-container: on-host ## Attach to a running Docker container
 	@$(DOCKER) exec -it $(CONTAINER_NAME) /bin/bash
 
 .PHONY: backup
-backup: ## Fast backup to GitHub repository
-	@bash docker/backup.sh
+backup: ## fast backup
+	@bash docker/backup.sh "$(shell echo $(filter-out $@,$(MAKECMDGOALS)) | sed 's/^/ /' | sed 's/ $$//')"
+%:
+	@:
 
 .PHONY: archive
 archive: on-host ## Archive all data/environment into one .tar.gz file with SHA256
@@ -120,8 +122,7 @@ archive: on-host ## Archive all data/environment into one .tar.gz file with SHA2
 	@$(DOCKER) save -o $(IMAGE_NAME)-$(DATE).tar $(IMAGE_NAME)-$(DATE) >/dev/null 2>&1
 	@$(DOCKER) rmi $(IMAGE_NAME)-$(DATE) >/dev/null 2>&1
 	@echo "$(CONTAINER_NAME)-$(DATE) has been packaged successfully!"
-	@cd .. && \
-	@tar -czf $(PROJECT_NAME).tar.gz $(PROJECT_NAME) && sha256sum $(PROJECT_NAME).tar.gz > $(PROJECT_NAME).tar.gz.sha256
+	@cd .. && tar -czf $(PROJECT_NAME).tar.gz $(PROJECT_NAME) && sha256sum $(PROJECT_NAME).tar.gz > $(PROJECT_NAME).tar.gz.sha256
 	@echo "$(PROJECT_NAME) has been archived successfully!"
 	
 .PHONY: reproduce
@@ -151,7 +152,7 @@ jupyter: on-docker ## Start Jupyter Notebook server inside Docker
 
 .PHONY: verify-cuda
 verify-cuda: on-docker ## Verify CUDA installation
-	@$(PYTHON) docker/verify_cuda.py
+	@python docker/verify_cuda.py
 
 .PHONY: lint
 lint: ## Run linter to check and fix code style issues

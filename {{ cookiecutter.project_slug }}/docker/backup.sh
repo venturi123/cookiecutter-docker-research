@@ -20,8 +20,9 @@ if [[ -n $(git status -s) ]]; then
     exit 1
   fi
 
-  # Commit changes
-  git commit -m "Regular backup"
+  # Commit changes with custom message if provided, otherwise use default
+  COMMIT_MSG=${1:-"Regular backup"}
+  git commit -m "$COMMIT_MSG"
   if [ $? -ne 0 ]; then
     printf "\033[0;31mCommit failed.\033[0m\n"
     exit 1
@@ -37,4 +38,3 @@ if [[ -n $(git status -s) ]]; then
 else
   printf "\033[0;33mNo changes to commit.\033[0m\n"
 fi
-
