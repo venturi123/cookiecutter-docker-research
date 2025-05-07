@@ -38,6 +38,9 @@ Get your project set up with just five commands in ten minutes!
 # Download and initialize the cookiecutter template in interactive mode
 cookiecutter gh:venturi123/cookiecutter-docker-research
 
+# Check the available NGC Container tags
+# https://catalog.ngc.nvidia.com/orgs/nvidia/containers/pytorch/tags
+
 # Change the working directory to the project folder
 cd {path/to/your/project}
 
@@ -53,6 +56,12 @@ make attach-container
 
 # Test your image and container, and verify the NVIDIA/CUDA environment
 make verify-cuda
+
+# If you need LaTeX, install it, but it's bit heavy (7+GB)
+make install-latex-full
+
+# or a more lightweight option to enable Matplotlib latex backend
+make install-latex-small
 
 # Finished!
 echo "Everything is done! Enjoy it!"

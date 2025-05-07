@@ -9,9 +9,6 @@ export PWD=$(shell pwd)
 export HOST_UID=$(shell id -u)
 export HOST_GID=$(shell id -g)
 export PROJECT_NAME={{ cookiecutter.project_slug }}
-export DATA_SOURCE={{ cookiecutter.data_source }}
-export JUPYTER_HOST_PORT={{ cookiecutter.jupyter_host_port }}
-export JUPYTER_CONTAINER_PORT=8888
 export IMAGE_NAME=$(PROJECT_NAME)-image
 export CONTAINER_NAME=$(PROJECT_NAME)-container
 export DATE=$(shell date +%Y%m%d%H%M%S)
@@ -53,40 +50,13 @@ on-host: check-is-host ## Ensure the script is running on the host machine
 on-docker: check-is-docker ## Ensure the script is running inside a Docker container
 
 .PHONY: init
-init: init-docker sync-from-source ## Initialize the repository for training by setting up Docker and syncing data
-
-.PHONY: sync-from-source
-sync-from-source: ## Download data from the specified data source to the local environment
-	{% if cookiecutter.data_source_type == 's3' %}
-		@aws s3 sync $(DATA_SOURCE) ./data/
-	{% elif cookiecutter.data_source_type == 'nfs' %}
-		@cp -r $(DATA_SOURCE)/* ./data/
-	{% elif cookiecutter.data_source_type == 'url' %}
-		@wget $(DATA_SOURCE) -P ./data/
-	{% elif cookiecutter.data_source_type == 'manual' %}
-		@echo "External data should be mounted manually."
-	{% endif %}
-
-.PHONY: sync-to-source
-sync-to-source: ## Sync local data to the specified data source
-	{% if cookiecutter.data_source_type == 's3' %}
-		@aws s3 sync ./data/ $(DATA_SOURCE)
-	{% elif cookiecutter.data_source_type == 'nfs' %}
-		@cp -r ./data/* $(DATA_SOURCE)/
-	{% elif cookiecutter.data_source_type == 'url' %}
-		@echo "No sync target for URL data source."
-	{% elif cookiecutter.data_source_type == 'manual' %}
-		@echo "Data will not be synced. Please sync manually if needed."
-	{% endif %}
-
-.PHONY: init-docker
-init-docker: on-host check-docker-installed ## Build the Docker image for the project
+init: on-host check-docker-installed ## Build the Docker image for the project
 	@$(DOCKER) build -t $(IMAGE_NAME) -f docker/Dockerfile \
 		--build-arg USER_UID=$(HOST_UID) \
 		--build-arg USER_GID=$(HOST_GID) .
 
-.PHONY: init-docker-no-cache
-init-docker-no-cache: on-host check-docker-installed ## Build the Docker image without cache
+.PHONY: init-no-cache
+init-no-cache: on-host check-docker-installed ## Build the Docker image without cache
 	@$(DOCKER) build --no-cache -t $(IMAGE_NAME) -f docker/Dockerfile \
 		--build-arg USER_UID=$(HOST_UID) \
 		--build-arg USER_GID=$(HOST_GID) .
@@ -94,7 +64,6 @@ init-docker-no-cache: on-host check-docker-installed ## Build the Docker image w
 .PHONY: create-container
 create-container: on-host check-docker-installed ## Create and start a detached Docker container
 	@$(DOCKER) run -d --gpus all --ipc=host --pid=host --runtime=nvidia \
-		-p $(JUPYTER_HOST_PORT):$(JUPYTER_CONTAINER_PORT) \
 		-v "${PWD}:/home/docker/${PROJECT_NAME}" \
 		-v "${HOME}/.ssh:/home/docker/.ssh" \
 		-v "${HOME}/.gitconfig:/home/docker/.gitconfig" \
@@ -146,14 +115,20 @@ reproduce: on-host ## Reload the environment from a .tar file
 		fi; \
 	fi
 
-.PHONY: jupyter
-jupyter: on-docker ## Start Jupyter Notebook server inside Docker
-	@jupyter lab --ip=0.0.0.0 --port=${JUPYTER_CONTAINER_PORT}
-
 .PHONY: verify-cuda
 verify-cuda: on-docker ## Verify CUDA installation
 	@python docker/verify_cuda.py
 
+.PHONY: install-latex-full
+install-latex-full: on-docker ## Install LaTeX (scheme-full, 7+GB)
+	@bash docker/install_latex.sh
+	@echo "source ~/.bashrc to finish the installation"
+
+.PHONY: install-latex-small
+install-latex-small: on-docker ## Install LaTeX (scheme-small, enable Matplotlib latex backend)
+	@bash docker/install_latex_small.sh
+	@echo "source ~/.bashrc to finish the installation"
+	
 .PHONY: lint
 lint: ## Run linter to check and fix code style issues
 	@ruff check --fix
