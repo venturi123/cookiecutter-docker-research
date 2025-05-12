@@ -26,7 +26,7 @@ Let's get started! 💪
 
 - A currently supported Linux release (using outdated Linux releases is not recommended)
 - [Docker Engine](https://docs.docker.com/engine/install/)
-- [NVIDIA GPU Drivers](https://docs.nvidia.com/datacenter/tesla/tesla-installation-notes/index.html) (no need to install the NVIDIA CUDA Toolkit separately)
+- [NVIDIA GPU Drivers](https://docs.nvidia.com/datacenter/tesla/driver-installation-guide/index.html)
 - [NVIDIA Container Toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html)
 - [Cookiecutter](https://github.com/cookiecutter/cookiecutter)
 
