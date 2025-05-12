@@ -63,7 +63,7 @@ init-no-cache: on-host check-docker-installed ## Build the Docker image without 
 
 .PHONY: create-container
 create-container: on-host check-docker-installed ## Create and start a detached Docker container
-	@$(DOCKER) run -d --gpus all --ipc=host --pid=host --runtime=nvidia \
+	@$(DOCKER) run -d --gpus all --ipc=host --pid=host --network host --runtime=nvidia \
 		-v "${PWD}:/home/docker/${PROJECT_NAME}" \
 		-v "${HOME}/.ssh:/home/docker/.ssh" \
 		-v "${HOME}/.gitconfig:/home/docker/.gitconfig" \
@@ -135,10 +135,24 @@ lint: ## Run linter to check and fix code style issues
 
 .PHONY: profile
 profile: on-host ## Display Docker container profile
-	@echo "CONTAINER_NAME: $(CONTAINER_NAME)"
-	@echo "IMAGE_NAME: $(IMAGE_NAME)"
-	@echo "JUPYTER_PORT: $$(docker port $(CONTAINER_NAME))"
-	@echo "DATA_SOURCE: $(DATA_SOURCE)"
+	@echo "CONTAINER_NAME: "
+	@echo $(CONTAINER_NAME)
+	@echo
+	@echo "IMAGE_NAME: "
+	@echo $(IMAGE_NAME)
+	@echo
+	@echo "IP_ADDRESS: "
+	@echo $$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' $(CONTAINER_NAME))
+	@echo
+	@echo "Ports: "
+	@docker inspect -f '{{range $$containerPort, $$bindings := .HostConfig.PortBindings}}{{range $$bindings}}{{println .HostPort "->" $$containerPort}}{{end}}{{end}}' $(CONTAINER_NAME) | sed 's/^/  /'
+	@echo
+	@echo "Mounts: "
+	@docker inspect -f '{{range .Mounts}}{{println .Source "->" .Destination}}{{end}}' $(CONTAINER_NAME) | sed 's/^/  /'
+	@echo
+	@echo "Environment variables: "
+	@docker inspect -f '{{range .Config.Env}}{{println .}}{{end}}' $(CONTAINER_NAME) | sed 's/^/  /'
+	@echo
 
 .PHONY: clean-docker
 clean-docker: clean-container clean-image ## Remove Docker image and container

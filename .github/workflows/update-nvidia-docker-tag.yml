@@ -1,0 +1,36 @@
+name: Update NVIDIA Docker Tag
+
+on:
+  schedule:
+    - cron: '0 0 * * 1'
+  workflow_dispatch:
+
+jobs:
+  update-tag:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Install dependencies
+        run: pip3 install requests
+      
+      - name: Run update script
+        run: |
+          python3 ".github/scripts/update_nvidia_docker_tag.py"
+      
+      - name: Commit changes
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add cookiecutter.json
+          
+          # Only commit if there are actual changes
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+            exit 0
+          fi
+          
+          git commit -m "Update NVIDIA Docker tag to latest version"
+          git push 
