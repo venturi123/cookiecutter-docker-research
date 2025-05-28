@@ -142,16 +142,16 @@ profile: on-host ## Display Docker container profile
 	@echo $(IMAGE_NAME)
 	@echo
 	@echo "IP_ADDRESS: "
-	@echo $$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' $(CONTAINER_NAME))
+	@echo $$(docker inspect -f '{% raw %}{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}{% endraw %}' $(CONTAINER_NAME))
 	@echo
 	@echo "Ports: "
-	@docker inspect -f '{{range $$containerPort, $$bindings := .HostConfig.PortBindings}}{{range $$bindings}}{{println .HostPort "->" $$containerPort}}{{end}}{{end}}' $(CONTAINER_NAME) | sed 's/^/  /'
+	@docker inspect -f '{% raw %}{{range $$containerPort, $$bindings := .HostConfig.PortBindings}}{{range $$bindings}}{{println .HostPort "->" $$containerPort}}{{end}}{{end}}{% endraw %}' $(CONTAINER_NAME) | sed 's/^/  /'
 	@echo
 	@echo "Mounts: "
-	@docker inspect -f '{{range .Mounts}}{{println .Source "->" .Destination}}{{end}}' $(CONTAINER_NAME) | sed 's/^/  /'
+	@docker inspect -f '{% raw %}{{range .Mounts}}{{println .Source "->" .Destination}}{{end}}{% endraw %}' $(CONTAINER_NAME) | sed 's/^/  /'
 	@echo
 	@echo "Environment variables: "
-	@docker inspect -f '{{range .Config.Env}}{{println .}}{{end}}' $(CONTAINER_NAME) | sed 's/^/  /'
+	@docker inspect -f '{% raw %}{{range .Config.Env}}{{println .}}{{end}}{% endraw %}' $(CONTAINER_NAME) | sed 's/^/  /'
 	@echo
 
 .PHONY: clean-docker
