@@ -1,6 +1,9 @@
 # Base image from NVIDIA with PyTorch
 FROM nvcr.io/nvidia/pytorch:{{ cookiecutter.nvidia_docker_tag }}
 
+# Use bash for the shell
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+
 # Set environment variables using build arguments
 ARG USER_UID
 ARG USER_GID
@@ -18,7 +21,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 # Install required packages and clean up APT lists to reduce image size
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
-    sudo tmux htop bash-completion && \
+    sudo tmux htop bash-completion curl && \
     rm -rf /var/lib/apt/lists/*
 
 # Check if the user already exists; if so, modify UID and GID. Otherwise, create a new user and set up the home directory
@@ -43,15 +46,20 @@ USER $USERNAME
 ENV PATH=/home/docker/.local/bin:$PATH
 ENV PYTHONPATH=/home/docker/{{ cookiecutter.project_slug }}
 
+# Copy configuration files with the correct ownership FIRST
+COPY --chown=docker:docker docker/.bash_aliases docker/.tmux.conf docker/.bashrc /home/docker/
+COPY --chown=docker:docker docker/htoprc /home/docker/.config/htop/htoprc
+
+# Download and install nvm
+RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/refs/heads/master/install.sh | bash
+RUN export NVM_DIR="$HOME/.nvm" \
+    && [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh" \
+    && nvm install node
+
 # Copy requirements and install dependencies
 COPY --chown=docker:docker docker/requirements.txt /home/docker/requirements.txt
 RUN pip install --no-cache-dir --upgrade pip && \
     pip install --no-cache-dir -r /home/docker/requirements.txt
 
-# Copy configuration files with the correct ownership
-COPY --chown=docker:docker docker/.bash_aliases docker/.tmux.conf docker/.bashrc /home/docker/
-COPY --chown=docker:docker docker/htoprc /home/docker/.config/htop/htoprc
-
 # Set the working directory
 WORKDIR /home/docker/{{ cookiecutter.project_slug }}
-

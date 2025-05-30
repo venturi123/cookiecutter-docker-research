@@ -28,13 +28,13 @@ tt(){
 
       # window 2
       tmux new-window -t $SESSION_NAME_:1 -n "torch"
-      tmux split-window -v -p 40 -t $SESSION_NAME_:torch
+      tmux split-window -v -l 40% -t $SESSION_NAME_:torch
       tmux select-pane -U
-      tmux split-window -v -p 50 -t $SESSION_NAME_:torch
+      tmux split-window -v -l 50% -t $SESSION_NAME_:torch
       tmux select-pane -U
-      tmux split-window -v -p 50 -t $SESSION_NAME_:torch
+      tmux split-window -v -l 50% -t $SESSION_NAME_:torch
       tmux select-pane -D
-      tmux split-window -v -p 50 -t $SESSION_NAME_:torch
+      tmux split-window -v -l 50% -t $SESSION_NAME_:torch
       tmux select-pane -U
       tmux select-pane -U
       tmux select-pane -U
