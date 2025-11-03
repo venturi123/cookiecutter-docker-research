@@ -1,5 +1,5 @@
 {
     "project_name": "project_name",
     "project_slug": "{{ cookiecutter.project_name.lower().replace(' ', '_').replace('-', '_') }}",
-    "nvidia_docker_tag": "25.09-py3"
+    "nvidia_docker_tag": "25.10-py3"
 }
